@@ -1,0 +1,117 @@
+<html>
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/dropzone.js"></script>
+  <link rel="stylesheet" type="text/css" href="ui/dropzone.css" />
+  <style>
+    body {
+      background: rgb(243, 244, 245);
+      height: 100%;
+      color: rgb(100, 108, 127);
+      line-height: 1.4rem;
+      font-family: Roboto, "Open Sans", sans-serif;
+      font-size: 20px;
+      font-weight: 300;
+      text-rendering: optimizeLegibility;
+      padding: 100px;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .dropzone {
+      background: white;
+      border-radius: 5px;
+      border: 2px dashed rgb(0, 135, 247);
+      border-image: none;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .code-sign-block {
+      display: inline-block;
+      margin: 24px 24px 24px 24px;
+      position: relative;
+    }
+
+    .code-sign-block div {
+      display: inline-block;
+      line-height: 40px;
+    }
+
+
+    .code-sign-switch {
+      /* margin-top: -30px;
+      margin-left: 75px; */
+    }
+
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    .row {
+      display: flex;
+      max-width: 500px;
+      position: relative;
+      margin: auto;
+    }
+
+    .column2 {
+      overflow: hidden;
+      width: auto;
+      padding: 10px;
+    }
+
+    .column1 {
+      float: left;
+      width: 75px;
+      padding: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+  </style>
+
+</head>
+
+<body>
+  <h1>Upload flags</h1>
+  <form ref='uploadForm' id='uploadForm' action='upload' method='post' class="dropzone" encType="multipart/form-data">
+    <div class="dz-message needsclick">
+      Drop zipped flag files here or click to choose<br>
+    </div>
+  </form>
+</body>
+
+
+<script>
+  Dropzone.autoDiscover = false;
+
+  $(document).ready(function () {
+    $("#uploadForm").dropzone({
+      paramName: "file", // The name that will be used to transfer the file
+      maxFilesize: 100, // MB
+      acceptedFiles: ".zip",
+      init: function () {
+        this.on("success", function (file, response) {
+          console.log(response);
+        })
+      }
+    });
+
+  });
+
+  $("#uploadForm").submit(function (e) {
+    console.log('uploaded successfully');
+    // e.preventDefault();
+  });
+</script>
+
+</html>
