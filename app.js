@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const mkdirp = require('mkdirp');
 const path = require('path');
 var fs = require('fs');
+var Promise = require('promise');
 
 var AdmZip = require('adm-zip');
 
@@ -35,57 +36,43 @@ app.post("/upload", function (req, res) {
     }
     let zipFile = req.files.file;
     var folder = path.join('public/uploads/') + Date.now();
-    mkdirp(folder, function (err) {
-        if (err) {
-            console.log('Error creating file ' + err);
+
+    createDirectory(folder)
+        .then(result => {
+            let filePath = folder + '/' + zipFile.name;
+            console.log(filePath);
+            return moveFile(zipFile, filePath);
+        }).then(result => {
+            return res.status(200).send(JSON.stringify({
+                message: 'File uploaded successfully',
+                path: result
+            }, null, 3));
+        }).catch(err => {
             return res.status(500).send(err.message);
-        }
+        })
+});
 
-        let filePath = folder + '/' + zipFile.name;
-        let relativeFilePath = filePath.replace('public/', '');
-        console.log(filePath);
+app.post("/convert", function (req, res) {
+    console.log(req.body);
+    console.log(req.body.path);
 
-        zipFile.mv(filePath, function (err) {
-            if (err) {
-                console.log('moving file failed' + err);
-                return res.status(500).send(err.message);
-            }
-
-            let unzippedFolder = path.join(folder, "unzipped");
-            mkdirp(unzippedFolder, null);
-            var zip = new AdmZip(filePath);
-            var zipEntries = zip.getEntries();
-            zip.extractAllTo(unzippedFolder, true);
-
-            let width = 40;
-            let height = 20;
-            const canvas = createCanvas(width * 27, height * 27);
-            const ctx = canvas.getContext('2d');
-            zipEntries.forEach(function (zipEntry) {
-                let position = 1;
-                loadImage(path.join(unzippedFolder, zipEntry.name)).then((image) => {                    
-                    let name = zipEntry.name.replace(".png", "");
-                    let xPosition = name.charCodeAt(0) - 96;
-                    let yPosition = name.charCodeAt(1) - 96;
-                    ctx.drawImage(image, xPosition * width, yPosition * height, width, height)
-                    position++;
-                });
-            });
-
-            loadImage(path.join(unzippedFolder, zipEntries[0].name)).then((image) => {
-                let spriteImagePath = path.join(folder, "flags-sprite.png")
-                const out = fs.createWriteStream(spriteImagePath)
-                const stream = canvas.createPNGStream()
-                stream.pipe(out)
-                out.on('finish', () => {
-                    console.log('The PNG file was created.');                    
-                    return res.status(200).send(`http://${hostname}:${port}/${spriteImagePath.replace('public/', '')}`);                    
-                });
-            })
-
-        });
-    });
-    //return res.status(200).send('File uploaded successfully');
+    let filePath = req.body.path;
+    let parentFolder = filePath.substring(0, filePath.lastIndexOf('/'));
+    let unzippedFolder = path.join(parentFolder, 'unzipped');
+    unzipFlags(req.body.path, unzippedFolder)
+        .then(result => {
+            return drawFlagsOnCanvas(req.body.path, unzippedFolder, parseInt(req.body.width), parseInt(req.body.height));
+        })
+        .then(result => {
+            console.log('created canvas');
+            return createSpriteImage(result, unzippedFolder);
+        })
+        .then(result => {
+            console.log('created sprite');
+            return res.status(200).send(result);
+        }).catch(err => {
+            return res.status(500).send('Failed ' + err.message);
+        })
 });
 
 function findCommon(arr) {
@@ -94,12 +81,86 @@ function findCommon(arr) {
         val = arr[0],
         i, x;
 
-    for(i = 0; i < arr.length; i ++) {
+    for (i = 0; i < arr.length; i++) {
         x = arr[i]
         if (m[x]) {
             ++m[x] > max && (max = m[i], val = x);
         } else {
             m[x] = 1;
         }
-    } return val;    
+    } return val;
+}
+
+function createDirectory(directoryPath) {
+    return new Promise(function (resolve, reject) {
+        mkdirp(directoryPath, function (err) {
+            if (err) {
+                return reject(err)
+            }
+            resolve();
+        });
+    })
+}
+
+function moveFile(source, destination) {
+    return new Promise(function (resolve, reject) {
+        source.mv(destination, function (err) {
+            if (err) {
+                console.log('moving file failed' + err);
+                return reject(err)
+            }
+            resolve(destination);
+        });
+    })
+}
+
+function unzipFlags(zipFile, destination) {
+    return new Promise(function (resolve, reject) {
+        mkdirp(destination, null);
+        var zip = new AdmZip(zipFile);
+        zip.extractAllTo(destination, true);
+        resolve(destination);
+    });
+}
+
+function drawFlagsOnCanvas(filePath, unzippedFolder, width, height) {
+    console.log(filePath);
+    console.log(width);
+    console.log(height);
+    return new Promise(function (resolve, reject) {
+        console.log('drawing canvas')
+        const canvas = createCanvas(width * 27, height * 27);
+        const ctx = canvas.getContext('2d');
+
+        var zip = new AdmZip(filePath);
+        console.log('got the entries')
+        var zipEntries = zip.getEntries();
+        zipEntries.forEach(function (zipEntry) {
+            let position = 1;
+            loadImage(path.join(unzippedFolder, zipEntry.name)).then((image) => {
+                let name = zipEntry.name.replace(".png", "");
+                let xPosition = name.charCodeAt(0) - 96;
+                let yPosition = name.charCodeAt(1) - 96;
+                ctx.drawImage(image, xPosition * width, yPosition * height, width, height)
+                position++;
+            });
+        });
+        resolve(canvas);
+    });
+}
+
+function createSpriteImage(canvas, unzippedFolder) {
+    return new Promise(function (resolve, reject) {
+        loadImage(path.join(unzippedFolder, "ad.png")).then((image) => {
+            let folder = unzippedFolder.substring(0, unzippedFolder.lastIndexOf('/'));
+            let spriteImagePath = path.join(folder, "flags-sprite.png")
+            const out = fs.createWriteStream(spriteImagePath)
+            const stream = canvas.createPNGStream()
+            stream.pipe(out)
+            out.on('finish', () => {
+                console.log('The PNG file was created.');
+                resolve(`http://${hostname}:${port}/${spriteImagePath.replace('public/', '')}`);
+            });
+        })
+    });
 }

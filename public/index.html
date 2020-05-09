@@ -121,14 +121,15 @@
       <div><label>Desired size for each flag icon</label></div>
       <div class="submit-section-elements">
         <label>Width:</label>
-        <input type="number" class="size-input" id="width" value="32" min="1" max="100">
+        <input type="number" class="size-input" id="widthInput" value="32" min="1" max="100">
         <span></span>
       </div>
       <div>
         <label>Height:</label>
-        <input type="number" class="size-input" id="height" value="22" min="1" max="100">
+        <input type="number" class="size-input" id="heightInput" value="22" min="1" max="100">
       </div>
-      <div class="submit-section-elements"><button id="submitButton" class="mui-btn mui-btn--primary">Convert</button></div>
+      <div class="submit-section-elements"><button id="submitButton" class="mui-btn mui-btn--primary"
+          disabled>Convert</button></div>
     </div>
   </div>
 </body>
@@ -137,6 +138,7 @@
 <script>
   Dropzone.autoDiscover = false;
 
+  var uploadedPath = ''
   $(document).ready(function () {
     $("#uploadForm").dropzone({
       paramName: "file", // The name that will be used to transfer the file
@@ -146,11 +148,31 @@
         this.on("success", function (file, response) {
           $('#submitButton').removeAttr('disabled');
           console.log(response);
-          window.open(response, '_blank').focus();
+          var obj = JSON.parse(response);
+          uploadedPath = obj.path;
+          console.log(uploadedPath);
         })
       }
     });
 
+  });
+
+  $("#submitButton").click(function (e) {
+    var data = {
+      "path": uploadedPath,
+      "width": $("#widthInput").val(),
+      "height": $("#heightInput").val(),
+    };
+    console.log(data);
+    $.ajax({
+      type: 'post',
+      url: '/convert',
+      data: data,
+      success: function (response) {
+        console.log(response);
+        window.open(response, '_blank').focus();
+      }
+    })
   });
 
   $("#uploadForm").submit(function (e) {
