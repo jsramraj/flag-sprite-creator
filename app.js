@@ -57,14 +57,31 @@ app.post("/upload", function (req, res) {
             var zipEntries = zip.getEntries();
             zip.extractAllTo(unzippedFolder, true);
 
+            let firstImage = zipEntries[0];
             let width = 40;
             let height = 20;
+            var widthArray = [];
+            var heightArray = [];
+            var itemsProcessed = 0;
+            zipEntries.forEach(function (zipEntry) {
+                loadImage(path.join(unzippedFolder, zipEntry.name)).then((image) => {                    
+                    itemsProcessed++;
+                    widthArray.push(parseInt(image.width));
+                    heightArray.push(parseInt(image.height));
+                    if(itemsProcessed === zipEntries.length) {
+                        width = findCommon(widthArray);
+                        height = findCommon(heightArray);
+                        console.log(`Dimenstions ${width}x${height}`);                        
+                    }                                
+                });
+
+            });
+
             const canvas = createCanvas(width * 27, height * 27);
             const ctx = canvas.getContext('2d');
-
             zipEntries.forEach(function (zipEntry) {
                 let position = 1;
-                loadImage(path.join(unzippedFolder, zipEntry.name)).then((image) => {
+                loadImage(path.join(unzippedFolder, zipEntry.name)).then((image) => {                    
                     let name = zipEntry.name.replace(".png", "");
                     let xPosition = name.charCodeAt(0) - 96;
                     let yPosition = name.charCodeAt(1) - 96;
@@ -88,3 +105,19 @@ app.post("/upload", function (req, res) {
     });
     //return res.status(200).send('File uploaded successfully');
 });
+
+function findCommon(arr) {
+    var max = 1,
+        m = [],
+        val = arr[0],
+        i, x;
+
+    for(i = 0; i < arr.length; i ++) {
+        x = arr[i]
+        if (m[x]) {
+            ++m[x] > max && (max = m[i], val = x);
+        } else {
+            m[x] = 1;
+        }
+    } return val;    
+}
