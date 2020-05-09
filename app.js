@@ -57,26 +57,8 @@ app.post("/upload", function (req, res) {
             var zipEntries = zip.getEntries();
             zip.extractAllTo(unzippedFolder, true);
 
-            let firstImage = zipEntries[0];
             let width = 40;
             let height = 20;
-            var widthArray = [];
-            var heightArray = [];
-            var itemsProcessed = 0;
-            zipEntries.forEach(function (zipEntry) {
-                loadImage(path.join(unzippedFolder, zipEntry.name)).then((image) => {                    
-                    itemsProcessed++;
-                    widthArray.push(parseInt(image.width));
-                    heightArray.push(parseInt(image.height));
-                    if(itemsProcessed === zipEntries.length) {
-                        width = findCommon(widthArray);
-                        height = findCommon(heightArray);
-                        console.log(`Dimenstions ${width}x${height}`);                        
-                    }                                
-                });
-
-            });
-
             const canvas = createCanvas(width * 27, height * 27);
             const ctx = canvas.getContext('2d');
             zipEntries.forEach(function (zipEntry) {

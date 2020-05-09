@@ -4,6 +4,8 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/4.3.0/dropzone.js"></script>
   <link rel="stylesheet" type="text/css" href="ui/dropzone.css" />
+  <link href="//cdn.muicss.com/mui-0.10.2/css/mui.min.css" rel="stylesheet" type="text/css" />
+  <script src="//cdn.muicss.com/mui-0.10.2/js/mui.min.js"></script>
   <style>
     body {
       background: rgb(243, 244, 245);
@@ -42,12 +44,6 @@
       line-height: 40px;
     }
 
-
-    .code-sign-switch {
-      /* margin-top: -30px;
-      margin-left: 75px; */
-    }
-
     .row:after {
       content: "";
       display: table;
@@ -76,17 +72,65 @@
     * {
       box-sizing: border-box;
     }
+
+    .button {
+      background-color: rgb(0, 135, 247);
+      border: none;
+      color: white;
+      padding: 15px 32px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+    }
+
+    .submit-button {
+      margin-left: auto;
+      margin-right: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .submit-section {
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .submit-section-elements {
+      padding: 8px;
+    }
+
+    .size-input {
+      width: 80px;
+    }
   </style>
 
 </head>
 
 <body>
   <h1>Upload flags</h1>
-  <form ref='uploadForm' id='uploadForm' action='upload' method='post' class="dropzone" encType="multipart/form-data">
-    <div class="dz-message needsclick">
-      Drop zipped flag files here or click to choose<br>
+  <div>
+    <form ref='uploadForm' id='uploadForm' action='upload' method='post' class="dropzone" encType="multipart/form-data">
+      <div class="dz-message needsclick">
+        Drop zipped flag files here or click to choose<br>
+      </div>
+    </form>
+    <div id="submitSection" class="submit-section">
+      <div><label>Desired size for each flag icon</label></div>
+      <div class="submit-section-elements">
+        <label>Width:</label>
+        <input type="number" class="size-input" id="width" value="32" min="1" max="100">
+        <span></span>
+      </div>
+      <div>
+        <label>Height:</label>
+        <input type="number" class="size-input" id="height" value="22" min="1" max="100">
+      </div>
+      <div class="submit-section-elements"><button id="submitButton" class="mui-btn mui-btn--primary">Convert</button></div>
     </div>
-  </form>
+  </div>
 </body>
 
 
@@ -100,8 +144,9 @@
       acceptedFiles: ".zip",
       init: function () {
         this.on("success", function (file, response) {
+          $('#submitButton').removeAttr('disabled');
           console.log(response);
-          window.open(response, '_blank').focus();           
+          window.open(response, '_blank').focus();
         })
       }
     });
