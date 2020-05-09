@@ -8,12 +8,11 @@ const path = require('path');
 var fs = require('fs');
 var Promise = require('promise');
 
+const { port } = require('./config');
+
 var AdmZip = require('adm-zip');
 
 const { createCanvas, loadImage } = require('canvas')
-
-const hostname = '127.0.0.1';
-const port = 3000;
 
 
 const app = express();
@@ -25,7 +24,7 @@ app.use(fileUpload());
 
 
 app.listen(port, () => {
-    console.log(`Server running at http://${hostname}:${port}/`);
+    console.log(`Server running at port:${port}`);
 });
 
 app.post("/upload", function (req, res) {
@@ -53,7 +52,6 @@ app.post("/upload", function (req, res) {
 });
 
 app.post("/convert", function (req, res) {
-    console.log(req.body);
     console.log(req.body.path);
 
     let filePath = req.body.path;
@@ -163,7 +161,7 @@ function createSpriteImage(canvas, unzippedFolder) {
             out.on('finish', () => {
                 console.log('The PNG file was created.');
                 fs.rmdir(unzippedFolder, {recursive:true}, result => {
-                    resolve(`http://${hostname}:${port}/${spriteImagePath.replace('public/', '')}`);
+                    resolve(`${spriteImagePath.replace('public/', '')}`);
                 });
             });
         })

@@ -139,12 +139,14 @@
   Dropzone.autoDiscover = false;
 
   var uploadedPath = ''
+  var dropzone;
   $(document).ready(function () {
     $("#uploadForm").dropzone({
       paramName: "file", // The name that will be used to transfer the file
       maxFilesize: 100, // MB
       acceptedFiles: ".zip",
       init: function () {
+        dropzone = this;
         this.on("success", function (file, response) {
           $('#submitButton').removeAttr('disabled');
           console.log(response);
@@ -171,6 +173,7 @@
       success: function (response) {
         console.log(response);
         window.open(response, '_blank').focus();
+        dropzone.removeAllFiles(true);
       }
     })
   });
