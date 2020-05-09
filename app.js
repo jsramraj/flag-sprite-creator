@@ -145,7 +145,10 @@ function drawFlagsOnCanvas(filePath, unzippedFolder, width, height) {
                 position++;
             });
         });
-        resolve(canvas);
+        fs.unlink(filePath, result => {
+            console.log('deleted zip file');
+            resolve(canvas);
+        })
     });
 }
 
@@ -159,7 +162,9 @@ function createSpriteImage(canvas, unzippedFolder) {
             stream.pipe(out)
             out.on('finish', () => {
                 console.log('The PNG file was created.');
-                resolve(`http://${hostname}:${port}/${spriteImagePath.replace('public/', '')}`);
+                fs.rmdir(unzippedFolder, {recursive:true}, result => {
+                    resolve(`http://${hostname}:${port}/${spriteImagePath.replace('public/', '')}`);
+                });
             });
         })
     });
