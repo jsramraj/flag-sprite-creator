@@ -60,27 +60,31 @@ app.post("/upload", function (req, res) {
             let width = 40;
             let height = 20;
             const canvas = createCanvas(width * 27, height * 27);
-            const ctx = canvas.getContext('2d');            
+            const ctx = canvas.getContext('2d');
 
-            zipEntries.forEach(function(zipEntry) {
+            zipEntries.forEach(function (zipEntry) {
                 let position = 1;
                 loadImage(path.join(unzippedFolder, zipEntry.name)).then((image) => {
                     let name = zipEntry.name.replace(".png", "");
                     let xPosition = name.charCodeAt(0) - 96;
                     let yPosition = name.charCodeAt(1) - 96;
                     ctx.drawImage(image, xPosition * width, yPosition * height, width, height)
-                    position ++ ;
+                    position++;
                 });
             });
 
             loadImage(path.join(unzippedFolder, zipEntries[0].name)).then((image) => {
-                const out = fs.createWriteStream(path.join(folder, "flags-sprite.png"))
+                let spriteImagePath = path.join(folder, "flags-sprite.png")
+                const out = fs.createWriteStream(spriteImagePath)
                 const stream = canvas.createPNGStream()
                 stream.pipe(out)
-                out.on('finish', () => console.log('The PNG file was created.'))                
+                out.on('finish', () => {
+                    console.log('The PNG file was created.');                    
+                    return res.status(200).send(`http://${hostname}:${port}/${spriteImagePath.replace('public/', '')}`);                    
+                });
             })
-            
+
         });
     });
-    return res.status(200).send('File uploaded successfully');
+    //return res.status(200).send('File uploaded successfully');
 });
