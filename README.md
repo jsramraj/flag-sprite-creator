@@ -9,14 +9,14 @@ but you can use it anywhere as you wish.
 Simply put, when you input flag like this 🇯🇵 🇰🇷 🇩🇪 🇨🇳 🇺🇸 🇫🇷 🇪🇸 🇮🇹 🇷🇺 🇬🇧, to this tool, 
 this will create a sprite image like the following
 
-<img src="https://github.com/jsramraj/flags/raw/master/flags/src/main/res/drawable/all_flags.png" width="50%">
+<img src="https://github.com/jsramraj/flags/raw/master/flags/src/main/assets/flags_sprite.png" width="50%">
 
 ## Usage
 1. Open the following link in your browser
 2. Upload a zip file that contains all the flags (flag names should only be ISO standard code as mentioned [here](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2))
 3. Enter the size of individual flag image
 4. Click the Convert button
-5. You should be seeing the sprite image after the conversion finishes
+5. You should be seeing the sprite image after the conversion finishes. (Make sure you enable the popup for this page)
 
 ## Where to get the raw flag image?
 You can download the flag images for all the countries in your desired resolutions from 
